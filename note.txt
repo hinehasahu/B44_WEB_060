@@ -1,1 +1,123 @@
-cloneed
+User Schema:-
+{
+  _id,
+  name,
+  email,
+  password,
+  role: "citizen" | "lawyer" | "admin",
+  contactInfo,
+  location,
+  isAnonymous: Boolean,
+  createdAt,
+  updatedAt
+}
+Example: {
+  "name": "Admin User",
+  "email": "admin@firmse.com",
+  "password": "Admin@Secure789",
+  "role": "Admin",
+  "contactInfo": "admin.support@firmse.com",
+  "location": "Bangalore",
+  "contactNo": 9001234567,
+  "isAnonymous": false
+}
+
+
+
+
+
+CrimeReport Schema:-
+{
+  _id,
+  reportedBy: ObjectId (User),
+  incidentType: String,
+  date: Date,
+  time: String,
+  location: String,
+  description: String,
+  evidenceFiles: [String], // file URLs
+  witnesses: [ObjectId], // references
+  lawyerComments: [{ lawyerId, comment, timestamp }],
+  hearingRecords: [{
+  date: { type: Date, required: true },
+  notes: { type: String },
+  audioFile: { type: String },
+  isFinalHearing: { type: Boolean, default: false }
+  }],
+  verdict: {
+    judgeName: { type: String },
+    decision: { type: String },
+    reasoning: { type: String },
+    decisionDate: { type: Date }
+  },
+  status: "Pending" | "Under Investigation" | "Closed",
+  caseComplexity: String,
+  aiPrediction: String,
+  verdict: {
+    judgeName,
+    decision,
+    reasoning,
+    decisionDate
+  },
+  shareLinks: {
+    public: String,
+    private: String
+  },
+  createdAt,
+  updatedAt
+}
+
+Example: {
+  "reportedBy": "68077faac765d21087f1f306",
+  "incidentType": "Assault",
+  "date": "2024-11-20",
+  "time": "21:15",
+  "location": "Park Street, Kolkata",
+  "description": "A physical altercation took place where I was punched and threatened.",
+  "evidenceFiles": ["https://evidence.com/cctv-assault.mp4"],
+  "witnesses": ["68077deb6f7dcf4889c8b955"],
+  "lawyerComments": [
+    {
+      "lawyerId": "68077f96c765d21087f1f303",
+      "comment": "Preliminary evidence supports victim’s claim."
+    }
+  ],
+  "hearingRecords": [
+    {
+      "date": "2024-12-01",
+      "notes": "Initial statement recorded",
+      "audioFile": "https://evidence.com/audio-assault-hearing1.mp3",
+      "isFinalHearing": false
+    }
+  ],
+  "verdict": {
+    "judgeName": "Justice Raghav",
+    "decision": "Bail granted to accused",
+    "reasoning": "Lack of conclusive evidence at this stage",
+    "decisionDate": "2024-12-15"
+  },
+  "status": "Under Investigation",
+  "caseComplexity": "Medium",
+  "aiPrediction": "Moderate risk, further hearings advised",
+  "shareLinks": {
+    "public": "https://justigo.com/case/assault1",
+    "private": "https://justigo.com/case/private/assault1"
+  }
+}
+
+
+
+
+
+Witness Schema:-
+{
+  _id,
+  crimeId: ObjectId,
+  name,
+  statement,
+  contactInfo,
+  isAnonymous: Boolean
+}
+
+
+
