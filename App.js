@@ -1,5 +1,6 @@
 const express = require("express")
 const app = express()
+const cors = require('cors')
 require("dotenv").config()
 
 const PORT = process.env.PORT || 5000
@@ -9,7 +10,7 @@ const {CrimeReportRouter} = require("./Routes/crimeReport.Routes")
 const {WitnessRouter} = require("./Routes/witness.Routes")
 const {ConnectToDB} = require("./config/mongoose.db")
 ConnectToDB()
-
+app.use(cors())
 app.use(express.json())
 
 app.get("/test", async(req,res)=>{
