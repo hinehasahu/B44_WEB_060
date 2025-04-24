@@ -5,7 +5,7 @@ const { default: mongoose } = require("mongoose");
 
 const WitnessRouter = express.Router()
 
-WitnessRouter.get("/wr", (req, res) => {
+WitnessRouter.get("/healthy", (req, res) => {
     res.send("WR working, test passed.");
   });
 

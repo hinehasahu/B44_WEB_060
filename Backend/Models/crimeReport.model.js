@@ -19,7 +19,6 @@ const crimeReportSchema = new mongoose.Schema({
         status: {type: String,enum: ["Pending", "Under Investigation", "Closed"],default: "Pending"},
         caseComplexity: { type: String }, // could be enum too: Low | Medium | High
         aiPrediction: { type: String },
-        verdict: {judgeName: { type: String },decision: { type: String },reasoning: { type: String },decisionDate: { type: Date }},
         shareLinks: {public: { type: String },private: { type: String }}
     },
     {timestamps: true,versionKey: false}
