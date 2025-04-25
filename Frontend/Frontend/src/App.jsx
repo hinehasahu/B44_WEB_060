@@ -1,38 +1,42 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import { AuthProvider } from "./context/authContext";
-import Login from "./pages/Login";
-import Dashboard from "./pages/Dashboard";
-import LawyerPanel from "./pages/LawyerPanel";
-import Unauthorized from "./pages/Unauthorized";
-import ProtectedRoute from "./components/ProtectedRoute";
+import React from "react";
+import "../src/App.css"
+import { Route, Routes } from "react-router-dom";
 import Navbar from "./components/Navbar";
+import Login from "./pages/Login";
+import ProtectedRoute from "./components/ProtectedRoute";
+import ReportCrime from "./pages/ReportCrime";
+import CaseDetails from "./pages/CaseDetails";
+import Dashboard from "./pages/Dashboard";
+import Signup from "./pages/Signup";
+
 
 function App() {
   return (
-    <Routes>
-      <Route path="/" element={<Login />} />
-
-      <Route
-        path="/dashboard"
-        element={
-          <ProtectedRoute allowedRoles={["user", "lawyer", "admin"]}>
-            <Dashboard />
-          </ProtectedRoute>
-        }
-      />
-
-      <Route
-        path="/lawyer"
-        element={
-          <ProtectedRoute allowedRoles={["lawyer", "admin"]}>
-            <LawyerPanel />
-          </ProtectedRoute>
-        }
-      />
-
-      <Route path="/unauthorized" element={<Unauthorized />} />
-      <Route path="*" element={<div>404 Not Found</div>} />
-    </Routes>
+    <>
+      <Navbar />
+      <Routes>
+        <Route path="/" element={<Dashboard />} />
+        <Route
+          path="/report"
+          element={
+            <ProtectedRoute>
+              <ReportCrime />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/cases"
+          element={
+            <ProtectedRoute>
+              <CaseDetails />
+            </ProtectedRoute>
+          }
+        />
+        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<Signup />} />
+      </Routes>
+      
+    </>
   );
 }
 
