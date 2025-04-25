@@ -1,30 +1,14 @@
 import React, { useEffect, useState } from 'react';
+import { useParams } from 'react-router-dom';
 import {
-  Box,
-  Text,
-  Heading,
-  VStack,
-  HStack,
-  Badge,
-  Card,
-  CardHeader,
-  CardBody,
-  CardFooter,
-  Divider,
-  Container,
-  Tag,
-  TagLabel,
-  Avatar,
-  Flex,
-  SimpleGrid,
-  useColorModeValue,
-  Icon,
-  Button,
+  Box, Text, Heading, VStack, HStack, Badge, Card, CardHeader, CardBody, Divider,
+  Container, Tag, TagLabel, Avatar, Flex, SimpleGrid, useColorModeValue,
+  Icon, Button
 } from '@chakra-ui/react';
 import { CalendarIcon, TimeIcon, InfoIcon, WarningIcon, CheckCircleIcon, ChatIcon } from '@chakra-ui/icons';
 
 function CaseDetails() {
-
+  const { id } = useParams();
   const [caseData, setCaseData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -33,8 +17,6 @@ function CaseDetails() {
   const borderColor = useColorModeValue('gray.200', 'gray.700');
   const cardBg = useColorModeValue('gray.50', 'gray.700');
   const tagColorScheme = useColorModeValue('blue', 'cyan');
-
-
 
   const mockData = {
     incidentType: "Robbery",
@@ -46,18 +28,16 @@ function CaseDetails() {
     verdict: "Pending",
     caseComplexity: "High",
     description: "A robbery occurred at a local store...",
-    witnesses: ["Sample1", "Sample2"],  
-    evidenceFiles: ["Photo1.jpg", "Video1.mp4"],  
+    witnesses: ["Sample1", "Sample2"],
+    evidenceFiles: ["Photo1.jpg", "Video1.mp4"],
     lawyerComments: [
       { lawyerId: { name: "Lawyer 1" }, comment: "Initial comment" },
       { lawyerId: { name: "Lawyer 2" }, comment: "Second comment" }
     ]
   };
 
-  const API_URL = '"https://b44-web-060-5yqc.onrender.com/crimeReport/all"';
-
   useEffect(() => {
-    fetch(API_URL)
+    fetch("https://b44-web-060-5yqc.onrender.com/crimeReport/all")
       .then((res) => {
         if (!res.ok) {
           throw new Error("Failed to fetch case details.");
@@ -65,40 +45,36 @@ function CaseDetails() {
         return res.json();
       })
       .then((data) => {
-        setCaseData(data);
+        const foundCase = data.find((item) => item._id === id);
+        if (!foundCase) {
+          throw new Error("Case not found.");
+        }
+        setCaseData(foundCase);
         setLoading(false);
       })
-      .catch(() => {
-        setCaseData(mockData); 
+      .catch((err) => {
+        console.error(err);
+        setError("Unable to load case data.");
+        setCaseData(mockData); // Optional fallback
         setLoading(false);
       });
-  }, []); 
+  }, [id]);
 
   const getStatusProps = (status) => {
     switch (status?.toLowerCase()) {
-      case 'pending':
-        return { colorScheme: 'yellow', icon: WarningIcon };
-      case 'under investigation':
-        return { colorScheme: 'blue', icon: InfoIcon };
-      case 'closed':
-        return { colorScheme: 'green', icon: CheckCircleIcon };
-      default:
-        return { colorScheme: 'gray', icon: InfoIcon };
+      case 'pending': return { colorScheme: 'yellow', icon: WarningIcon };
+      case 'under investigation': return { colorScheme: 'blue', icon: InfoIcon };
+      case 'closed': return { colorScheme: 'green', icon: CheckCircleIcon };
+      default: return { colorScheme: 'gray', icon: InfoIcon };
     }
   };
 
- 
-  if (loading) {
-    return <Text textAlign="center" mt={10}>Loading...</Text>;
-  }
+  if (loading) return <Text textAlign="center" mt={10}>Loading...</Text>;
+  if (error) return <Text textAlign="center" color="red.500" mt={10}>Error: {error}</Text>;
 
-  if (error) {
-    return <Text textAlign="center" color="red.500" mt={10}>Error: {error}</Text>;
-  }
-
-  const handleLawyerComment = ()=>{
-    console.log("Clicked")
-  }
+  const handleLawyerComment = () => {
+    console.log("Clicked");
+  };
 
   const statusProps = getStatusProps(caseData.status);
 
@@ -213,7 +189,7 @@ function CaseDetails() {
               </Flex>
             </CardHeader>
             <CardBody>
-              {caseData.lawyerComments.length > 0 ? (
+              {caseData.lawyerComments?.length > 0 ? (
                 <VStack spacing={4} align="stretch">
                   {caseData.lawyerComments.map((comment, index) => (
                     <Box key={index} p={3} borderRadius="md" bg={useColorModeValue('white', 'gray.800')} borderWidth="1px" borderColor={borderColor}>
@@ -231,7 +207,6 @@ function CaseDetails() {
                 <Text textAlign="center" color="gray.500" py={4}>No comments yet</Text>
               )}
             </CardBody>
-
           </Card>
         </CardBody>
       </Card>

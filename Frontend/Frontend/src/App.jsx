@@ -8,6 +8,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import Navbar from "./components/Navbar";
 import CaseDetails from "./pages/CaseDetails";
 import ReportCrime from "./pages/ReportCrime";
+import AddWitnessForm from "./pages/addWitness";
 
 function App() {
   return (
@@ -32,7 +33,7 @@ function App() {
       />
 
       <Route
-        path="/caseDetails"
+        path="/caseDetails/:id"
         // element={
         //   <ProtectedRoute allowedRoles={["lawyer", "admin"]}>
         //     <CaseDetails />
@@ -55,7 +56,21 @@ function App() {
                   <ReportCrime />
               
               }
-            />
+        />
+
+        <Route
+              path="/addwitness"
+              // element={
+              //   <ProtectedRoute allowedRoles={["lawyer", "admin"]}>
+              //     <CaseDetails />
+              //   </ProtectedRoute>
+              // }
+              element={
+                  <AddWitnessForm />
+              
+              }
+        />
+
       <Route path="/unauthorized" element={<Unauthorized />} />
       <Route path="*" element={<div>404 Not Found</div>} />
     </Routes>
