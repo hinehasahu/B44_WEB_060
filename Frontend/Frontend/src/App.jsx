@@ -6,12 +6,13 @@ import LawyerPanel from "./pages/LawyerPanel";
 import Unauthorized from "./pages/Unauthorized";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Navbar from "./components/Navbar";
+import CaseDetails from "./pages/CaseDetails";
+import ReportCrime from "./pages/ReportCrime";
 
 function App() {
   return (
     <Routes>
       <Route path="/" element={<Login />} />
-
       <Route
         path="/dashboard"
         element={
@@ -30,6 +31,31 @@ function App() {
         }
       />
 
+      <Route
+        path="/caseDetails"
+        // element={
+        //   <ProtectedRoute allowedRoles={["lawyer", "admin"]}>
+        //     <CaseDetails />
+        //   </ProtectedRoute>
+        // }
+        element={
+            <CaseDetails />
+        
+        }
+      />
+
+      <Route
+              path="/reportCrime"
+              // element={
+              //   <ProtectedRoute allowedRoles={["lawyer", "admin"]}>
+              //     <CaseDetails />
+              //   </ProtectedRoute>
+              // }
+              element={
+                  <ReportCrime />
+              
+              }
+            />
       <Route path="/unauthorized" element={<Unauthorized />} />
       <Route path="*" element={<div>404 Not Found</div>} />
     </Routes>
