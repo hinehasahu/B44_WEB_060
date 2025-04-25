@@ -1,17 +1,17 @@
-// context/AuthContext.js
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { jwtDecode } from "jwt-decode";
 
 export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState({ isLoggedIn: false, name: "", role: "" });
+  const [user, setUser] = useState({ isLoggedIn: false, role: "" });
+console.log(user.isLoggedIn)
 
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (token) {
       const decoded = jwtDecode(token);
-      setUser({ isLoggedIn: true, name: decoded.name, role: decoded.role });
+      setUser({ isLoggedIn: true, role: decoded.role });
     }
   }, []);
 
@@ -28,20 +28,20 @@ export const AuthProvider = ({ children }) => {
     if (data.token) {
       localStorage.setItem("token", data.token);
       const decoded = jwtDecode(data.token);
-      setUser({ isLoggedIn: true, name: decoded.name, role: decoded.role });
+      setUser({ isLoggedIn: true, role: decoded.role });
       return { success: true };
     }
     return { success: false, message: data.message || "Login failed" };
   };
 
-  const signup = async (email, password, name, role) => {
+  const signup = async (email, password, name, role, contactInfo, location, contactNo, isAnonymous) => {
     try {
       const res = await fetch(
         "https://b44-web-060-5yqc.onrender.com/user/signup",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email, password, name, role }),
+          body: JSON.stringify({ email, password, name, role, contactInfo, location, contactNo, isAnonymous }),
         }
       );
 
@@ -50,7 +50,7 @@ export const AuthProvider = ({ children }) => {
       if (res.ok && data.token) {
         localStorage.setItem("token", data.token);
         const decoded = jwtDecode(data.token);
-        setUser({ isLoggedIn: true, name: decoded.name, role: decoded.role });
+        setUser({ isLoggedIn: true, role: decoded.role });
         return { success: true };
       }
 
@@ -69,7 +69,7 @@ export const AuthProvider = ({ children }) => {
 
   const logout = () => {
     localStorage.removeItem("token");
-    setUser({ isLoggedIn: false, name: "", role: "" });
+    setUser({ isLoggedIn: false, role: "" });
   };
 
   return (

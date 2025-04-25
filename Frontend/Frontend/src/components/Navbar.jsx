@@ -4,7 +4,7 @@ import { useAuth } from "../context/authContext";
 import { Link, useNavigate } from "react-router-dom";
 
 const Navbar = () => {
-  const { user, logout } = useAuth;
+  const { user, logout } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
   const navigate = useNavigate();
 
@@ -12,6 +12,8 @@ const Navbar = () => {
     logout();
     navigate("/login");
   };
+
+  console.log(user)
 
   return (
     <nav className="bg-blue-800 text-white px-4 py-3 shadow-md">
@@ -31,7 +33,7 @@ const Navbar = () => {
 
           {user?.isLoggedIn ? (
             <>
-              <li>👋 Hello, {user.role === "admin" ? "Admin" : user.name}</li>
+              <li>👋 Hello, {user.role === "Admin" ? "Admin" : "User"}</li>
               <li>
                 <button onClick={handleLogout} className="text-red-300 hover:text-red-500">Logout</button>
               </li>
