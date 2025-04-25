@@ -1,5 +1,7 @@
 const express = require("express")
 const { AuthenticationMW } = require("../Middleware/Auth.middleware")
+require("dotenv").config()
+const nodemailer = require("nodemailer");
 const { UserModel } = require("../Models/user.model")
 const {CrimeReportModel} = require("../Models/crimeReport.model" || "../Models/CrimeReport.model" )
 const CrimeReportRouter = express.Router()
