@@ -81,35 +81,23 @@ The server will run at: `http://localhost:3000`
 
 ---
 
+## 📬 API Overview
 
-## 📬 API Endpoints
+| Method | Endpoint                         | Description                                 |
+| ------ | -------------------------------- | ------------------------------------------- |
+| POST   | `/api/user/signup`               | Register a new user                         |
+| POST   | `/api/user/signin`               | User signin                                 |
+| GET    | `/api/crimeReport/healthy`       | Health test passed                          |
+| GET    | `/api/crimeReport/all`           | Get all cases (based on role)               |
+| POST   | `/api/crimeReport/registerCrime` | Register new case                           |
+| PUT    | `/api/crimeRepor/updateReport`   | Update case progress/report                 |
+| GET    | `/api/witness/healthy`           | Health test passed                          |
+| GET    | `/api/witness/all/:id`           | Get all witness(based on crimeID)           |
+| POST   | `/api/witness/addWitness/:id`    | Register new witness(based on crimeID)      |
+| PUT    | `/api/witness/updateWitness/:id` | Update witness detail's(based on WitnessID) |
+| DELETE | `/api/witness/deleteWitness/:id` | DElete witness(based on WitnessID)          |
 
-### 🔐 Auth Routes
-
-| Method | Endpoint           | Description           |
-| ------ | ------------------ | --------------------- |
-| POST   | `/api/user/signup` | Register a new user   |
-| POST   | `/api/user/signin` | Login and get a token |
-
-### 🚨 Crime Report Routes
-
-| Method | Endpoint                         | Description                     |
-| ------ | -------------------------------- | ------------------------------- |
-| GET    | `/api/crimeReport/healthy`       | Health check                    |
-| GET    | `/api/crimeReport/all`           | Get all crime reports (by role) |
-| POST   | `/api/crimeReport/registerCrime` | Register a new crime            |
-| PUT    | `/api/crimeReport/updateReport`  | Update progress of a crime case |
-
-### 👁️ Witness Routes
-
-| Method | Endpoint                         | Description              |
-| ------ | -------------------------------- | ------------------------ |
-| GET    | `/api/witness/healthy`           | Health check             |
-| GET    | `/api/witness/all/:id`           | Get witnesses for a case |
-| POST   | `/api/witness/addWitness/:id`    | Add a witness to a case  |
-| PUT    | `/api/witness/updateWitness/:id` | Update witness details   |
-| DELETE | `/api/witness/deleteWitness/:id` | Delete witness from case |
-
+> All sensitive routes are secured via JWT middleware.
 
 ---
 
