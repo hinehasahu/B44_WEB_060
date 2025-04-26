@@ -8,11 +8,12 @@ import ReportCrime from "./pages/ReportCrime";
 import CaseDetails from "./pages/CaseDetails";
 import Dashboard from "./pages/Dashboard";
 import Signup from "./pages/Signup";
+import AllCases from "./pages/allCases";
+import AddWitnessForm from "./pages/addWitness";
 
 
 function App() {
   return (
-
     <>
       <Navbar />
       <Routes>
@@ -26,17 +27,33 @@ function App() {
           }
         />
         <Route
-          path="/cases"
+          path="/cases/:id"
           element={
             <ProtectedRoute>
               <CaseDetails />
             </ProtectedRoute>
           }
         />
+        <Route
+          path="/allCases"
+          element={
+            <ProtectedRoute>
+              <AllCases />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/add-witness"
+          element={
+            <ProtectedRoute>
+              <AddWitnessForm/>
+            </ProtectedRoute>
+          }
+        />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
       </Routes>
-
+      
     </>
   );
 }

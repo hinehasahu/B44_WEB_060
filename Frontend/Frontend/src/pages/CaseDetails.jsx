@@ -1,104 +1,129 @@
 import React, { useEffect, useState } from 'react';
+import { useParams } from 'react-router-dom';
+import { jwtDecode } from 'jwt-decode';
 import {
-  Box,
-  Text,
-  Heading,
-  VStack,
-  HStack,
-  Badge,
-  Card,
-  CardHeader,
-  CardBody,
-  CardFooter,
-  Divider,
-  Container,
-  Tag,
-  TagLabel,
-  Avatar,
-  Flex,
-  SimpleGrid,
-  useColorModeValue,
-  Icon,
-  Button,
+  Box, Text, Heading, VStack, HStack, Badge, Card, CardHeader, CardBody, Divider,
+  Container, Tag, TagLabel, Avatar, Flex, SimpleGrid, useColorModeValue,
+  Icon, Button, Modal, ModalOverlay, ModalContent, ModalHeader, ModalCloseButton,
+  ModalBody, ModalFooter, Textarea, useDisclosure
 } from '@chakra-ui/react';
 import { CalendarIcon, TimeIcon, InfoIcon, WarningIcon, CheckCircleIcon, ChatIcon } from '@chakra-ui/icons';
+import { useAuth } from '../context/authContext'; 
 
 function CaseDetails() {
-
+  const { id } = useParams();
+  const { user } = useAuth();
   const [caseData, setCaseData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [userId, setUserId] = useState(null);
+  const [reporterName, setReporterName] = useState("");
+  const [newComment, setNewComment] = useState("");
+  const { isOpen, onOpen, onClose } = useDisclosure();  // Modal hooks
 
   const bgColor = useColorModeValue('white', 'gray.800');
   const borderColor = useColorModeValue('gray.200', 'gray.700');
   const cardBg = useColorModeValue('gray.50', 'gray.700');
   const tagColorScheme = useColorModeValue('blue', 'cyan');
 
-
-
-  const mockData = {
-    incidentType: "Robbery",
-    date: "2023-01-15",
-    time: "14:30",
-    location: "SampleLoc",
-    reportedBy: "Sample1",
-    status: "Open",
-    verdict: "Pending",
-    caseComplexity: "High",
-    description: "A robbery occurred at a local store...",
-    witnesses: ["Sample1", "Sample2"],  
-    evidenceFiles: ["Photo1.jpg", "Video1.mp4"],  
-    lawyerComments: [
-      { lawyerId: { name: "Lawyer 1" }, comment: "Initial comment" },
-      { lawyerId: { name: "Lawyer 2" }, comment: "Second comment" }
-    ]
-  };
-
-  const API_URL = '"https://b44-web-060-5yqc.onrender.com/crimeReport/all"';
+  useEffect(() => {
+    if (user.isLoggedIn) {
+      const token = localStorage.getItem("token");
+      if (token) {
+        try {
+          const decoded = jwtDecode(token);
+          const id = decoded.id || decoded._id || decoded.userId || decoded.sub;
+          setUserId(id);
+        } catch (error) {
+          console.error("Error decoding token:", error);
+        }
+      }
+    }
+  }, [user.isLoggedIn]);
 
   useEffect(() => {
-    fetch(API_URL)
-      .then((res) => {
+    const fetchCaseDetails = async () => {
+      const token = localStorage.getItem("token");
+      try {
+        const res = await fetch(`https://b44-web-060-5yqc.onrender.com/crimeReport/case/${id}`, {
+          headers: {
+            "Authorization": `Bearer ${token}`,
+          }
+        });
+
+        const data = await res.json();
+        console.log("Raw API response:", data);
+
         if (!res.ok) {
-          throw new Error("Failed to fetch case details.");
+          throw new Error(data.message || "Failed to fetch case details.");
         }
-        return res.json();
-      })
-      .then((data) => {
-        setCaseData(data);
+
+        console.log("data.reports:", data.reports);
+        setCaseData(data.reports);
+
+        const reporter = data.reports.reportedBy;
+        if (reporter && typeof reporter === "object" && reporter.name) {
+          setReporterName(reporter.name);
+        } else if (typeof reporter === "string") {
+          setReporterName("Reporter ID: " + reporter.slice(-6));
+        }
+
         setLoading(false);
-      })
-      .catch(() => {
-        setCaseData(mockData); 
+      } catch (err) {
+        console.error(err);
+        setError("Unable to load case data.");
         setLoading(false);
-      });
-  }, []); 
+      }
+    };
+
+    if (user.isLoggedIn) {
+      fetchCaseDetails();
+    }
+  }, [id, user.isLoggedIn]);
 
   const getStatusProps = (status) => {
     switch (status?.toLowerCase()) {
-      case 'pending':
-        return { colorScheme: 'yellow', icon: WarningIcon };
-      case 'under investigation':
-        return { colorScheme: 'blue', icon: InfoIcon };
-      case 'closed':
-        return { colorScheme: 'green', icon: CheckCircleIcon };
-      default:
-        return { colorScheme: 'gray', icon: InfoIcon };
+      case 'pending': return { colorScheme: 'yellow', icon: WarningIcon };
+      case 'under investigation': return { colorScheme: 'blue', icon: InfoIcon };
+      case 'closed': return { colorScheme: 'green', icon: CheckCircleIcon };
+      default: return { colorScheme: 'gray', icon: InfoIcon };
     }
   };
 
- 
-  if (loading) {
-    return <Text textAlign="center" mt={10}>Loading...</Text>;
-  }
+  const handleAddComment = async () => {
+    if (!newComment.trim()) {
+      return;
+    }
 
-  if (error) {
-    return <Text textAlign="center" color="red.500" mt={10}>Error: {error}</Text>;
-  }
+    const token = localStorage.getItem("token");
 
-  const handleLawyerComment = ()=>{
-    console.log("Clicked")
-  }
+    try {
+      const response = await fetch(`https://b44-web-060-5yqc.onrender.com/crimeReport/addLawyerComment/${id}`, {
+        method: 'POST',
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
+        },
+        body: JSON.stringify({ comment: newComment, lawyerId: userId }),
+      });
+
+      const result = await response.json();
+      if (result.success) {
+        console.log('Comment added successfully');
+        
+        setNewComment("");
+        onClose(); 
+        fetchCaseDetails(); 
+      } else {
+        console.error('Failed to add comment');
+      }
+    } catch (error) {
+      console.error('Error adding comment:', error);
+    }
+  };
+
+  if (loading) return <Text textAlign="center" mt={10}>Loading...</Text>;
+  if (error) return <Text textAlign="center" color="red.500" mt={10}>Error: {error}</Text>;
 
   const statusProps = getStatusProps(caseData.status);
 
@@ -139,15 +164,9 @@ function CaseDetails() {
                     <Text>{caseData.location}</Text>
                   </HStack>
                   <HStack>
-                    <Avatar size="xs" name={caseData.reportedBy} bg="blue.500" />
+                    <Avatar size="xs" name={reporterName} bg="blue.500" />
                     <Text fontWeight="medium">Reported By:</Text>
-                    <Text>{caseData.reportedBy}</Text>
-                  </HStack>
-                  <HStack>
-                    <Text fontWeight="medium">Verdict:</Text>
-                    <Badge colorScheme={caseData.verdict === "Pending" ? "yellow" : "green"}>
-                      {caseData.verdict}
-                    </Badge>
+                    <Text>{reporterName.includes("Reporter ID") ? "Anonymous User" : reporterName}</Text>
                   </HStack>
                 </VStack>
               </CardBody>
@@ -181,16 +200,6 @@ function CaseDetails() {
                       ))}
                     </Flex>
                   </Box>
-                  <Box>
-                    <Text fontWeight="medium" mb={1}>Evidence Files:</Text>
-                    <Flex gap={2} flexWrap="wrap">
-                      {caseData.evidenceFiles.map((file, index) => (
-                        <Tag key={index} size="md" variant="subtle" colorScheme="purple" borderRadius="full">
-                          <TagLabel>{file}</TagLabel>
-                        </Tag>
-                      ))}
-                    </Flex>
-                  </Box>
                 </VStack>
               </CardBody>
             </Card>
@@ -207,20 +216,20 @@ function CaseDetails() {
                     <Text>Lawyer's Comments</Text>
                   </HStack>
                 </Heading>
-                <Button onClick={handleLawyerComment} size="sm" colorScheme="blue" variant="outline">
+                <Button onClick={onOpen} size="sm" colorScheme="blue" variant="outline">
                   Add Comment
                 </Button>
               </Flex>
             </CardHeader>
             <CardBody>
-              {caseData.lawyerComments.length > 0 ? (
+              {caseData.lawyerComments?.length > 0 ? (
                 <VStack spacing={4} align="stretch">
                   {caseData.lawyerComments.map((comment, index) => (
                     <Box key={index} p={3} borderRadius="md" bg={useColorModeValue('white', 'gray.800')} borderWidth="1px" borderColor={borderColor}>
                       <Flex gap={3}>
-                        <Avatar name={comment.lawyerId.name} size="sm" bg="blue.500" />
+                        <Avatar name={comment.lawyerId?.name || "Lawyer"} size="sm" bg="blue.500" />
                         <Box>
-                          <Text fontWeight="bold">{comment.lawyerId.name}</Text>
+                          <Text fontWeight="bold">{comment.lawyerId?.name || "Anonymous Lawyer"}</Text>
                           <Text fontSize="sm">{comment.comment}</Text>
                         </Box>
                       </Flex>
@@ -231,10 +240,35 @@ function CaseDetails() {
                 <Text textAlign="center" color="gray.500" py={4}>No comments yet</Text>
               )}
             </CardBody>
-
           </Card>
         </CardBody>
       </Card>
+
+      {/* Modal for adding a comment */}
+      <Modal isOpen={isOpen} onClose={onClose}>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>Add a Comment</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            <Textarea
+              placeholder="Add your comment here"
+              value={newComment}
+              onChange={(e) => setNewComment(e.target.value)}
+              size="sm"
+              minHeight="120px"
+            />
+          </ModalBody>
+          <ModalFooter>
+            <Button colorScheme="blue" mr={3} onClick={handleAddComment}>
+              Submit
+            </Button>
+            <Button variant="ghost" onClick={onClose}>
+              Cancel
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
     </Container>
   );
 }

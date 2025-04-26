@@ -1,7 +1,7 @@
-
 import React, { useState } from "react";
 import { useAuth } from "../context/authContext";
 import { Link, useNavigate } from "react-router-dom";
+
 
 const Navbar = () => {
   const { user, logout } = useAuth();
@@ -29,7 +29,7 @@ const Navbar = () => {
         <ul className={`md:flex gap-6 items-center ${menuOpen ? "block" : "hidden"} md:block`}>
           <li><Link to="/">Home</Link></li>
           <li><Link to="/report">Crime Report</Link></li>
-          <li><Link to="/cases">Case Details</Link></li>
+          <li><Link to="/allCases">All Cases</Link></li>
 
           {user?.isLoggedIn ? (
             <>

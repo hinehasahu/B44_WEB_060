@@ -1,194 +1,324 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { jwtDecode } from 'jwt-decode';
-
 import {
-  Box,
-  Button,
-  FormControl,
-  FormLabel,
-  Input,
-  Textarea,
-  Heading,
-  VStack,
-  Container,
-  useColorModeValue,
-  Select
+  Box, Text, Heading, VStack, HStack, FormControl, FormLabel, Input, Textarea,
+  Container, Select, Button, SimpleGrid, useColorModeValue, FormErrorMessage,
+  Card, CardHeader, CardBody, IconButton, Flex, useToast
 } from '@chakra-ui/react';
+import { AddIcon, DeleteIcon, AttachmentIcon } from '@chakra-ui/icons';
+import { useAuth } from '../context/authContext';
 
 function ReportCrime() {
-  const [formData, setFormData] = useState({
-    reportedBy: '',
-    incidentType: '',
-    date: '',
-    time: '',
-    location: '',
-    description: '',
-    caseComplexity: 'Medium',
-    evidenceFiles: [],
-    witnesses: [],
-  });
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const toast = useToast();
 
-  const [error, setError] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const [userId, setUserId] = useState(null);
+  const [userName, setUserName] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errors, setErrors] = useState({});
 
   const bgColor = useColorModeValue('white', 'gray.800');
   const borderColor = useColorModeValue('gray.200', 'gray.700');
+  const cardBg = useColorModeValue('gray.50', 'gray.700');
 
- 
   useEffect(() => {
     const token = localStorage.getItem("token");
-    if (token) {
+    if (user.isLoggedIn && token) {
       try {
         const decoded = jwtDecode(token);
-        if (decoded && decoded.userId) {
-          setFormData((prev) => ({ ...prev, reportedBy: decoded.userId }));
-        }
+        const id = decoded.userID || decoded._id || decoded.id || decoded.sub;
+        const name = decoded.name || decoded.username || "Current User";
+        setUserId(id);
+        setUserName(name);
       } catch (error) {
-        console.error("Invalid token:", error);
+        console.error("Error decoding token:", error);
       }
+    } else {
+      toast({
+        title: "Authentication required",
+        description: "Please log in to report a crime",
+        status: "warning",
+        duration: 5000,
+        isClosable: true,
+      });
+      navigate('/login');
     }
-  }, []);
+  }, [user.isLoggedIn, navigate, toast]);
+
+  const [formData, setFormData] = useState({
+    incidentType: "",
+    date: "",
+    time: "",
+    location: "",
+    userID: "",
+    status: "Pending",
+    verdict: "Pending",
+    caseComplexity: "Medium",
+    description: "",
+    evidenceFiles: [],
+  });
+
+  useEffect(() => {
+    if (userId) {
+      setFormData(prev => ({ ...prev, userID: userId }));
+    }
+  }, [userId]);
+
+  const validateForm = () => {
+    const newErrors = {};
+    if (!formData.incidentType) newErrors.incidentType = "Incident type is required";
+    if (!formData.date) newErrors.date = "Date is required";
+    if (!formData.time) newErrors.time = "Time is required";
+    if (!formData.location) newErrors.location = "Location is required";
+    if (!formData.description) newErrors.description = "Description is required";
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    setFormData(prev => ({ ...prev, [name]: value }));
+    if (errors[name]) {
+      setErrors(prev => ({ ...prev, [name]: undefined }));
+    }
   };
 
   const handleFileChange = (e) => {
-    const files = Array.from(e.target.files).map((file) => file.name); // only names for now
-    setFormData((prev) => ({
+    const files = Array.from(e.target.files);
+    setFormData(prev => ({
       ...prev,
-      evidenceFiles: files,
+      evidenceFiles: files
     }));
   };
 
-  const handleSubmit = async () => {
-    if (
-      !formData.reportedBy ||
-      !formData.incidentType ||
-      !formData.date ||
-      !formData.time ||
-      !formData.location ||
-      !formData.description
-    ) {
-      setError('All required fields must be filled.');
+  const removeEvidenceFile = (index) => {
+    setFormData(prev => ({
+      ...prev,
+      evidenceFiles: prev.evidenceFiles.filter((_, i) => i !== index)
+    }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!validateForm()) {
+      toast({
+        title: "Form error",
+        description: "Please fill all required fields",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
       return;
     }
 
-    setError(null);
-    setLoading(true);
+    if (!userId) {
+      toast({
+        title: "Authentication error",
+        description: "Unable to identify current user. Please log in again.",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+      return;
+    }
+
+    setIsSubmitting(true);
 
     try {
       const token = localStorage.getItem("token");
+      const formDataToSend = new FormData();
+      formDataToSend.append("incidentType", formData.incidentType);
+      formDataToSend.append("date", formData.date);
+      formDataToSend.append("time", formData.time);
+      formDataToSend.append("location", formData.location);
+      formDataToSend.append("userID", formData.userID);
+      formDataToSend.append("status", formData.status);
+      formDataToSend.append("verdict", formData.verdict);
+      formDataToSend.append("caseComplexity", formData.caseComplexity);
+      formDataToSend.append("description", formData.description);
+
+      formData.evidenceFiles.forEach((file) => {
+        formDataToSend.append("evidenceFiles", file);
+      });
 
       const response = await fetch("https://b44-web-060-5yqc.onrender.com/crimeReport/registerCrime", {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`
+          "Authorization": `Bearer ${token}`
         },
-        body: JSON.stringify(formData),
+        body: formDataToSend
       });
-
-      const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message || "Failed to submit crime report");
+        throw new Error("Failed to submit crime report");
       }
 
-      alert("Crime report submitted successfully!");
-      setFormData({
-        reportedBy: formData.reportedBy, // keep the same user
-        incidentType: '',
-        date: '',
-        time: '',
-        location: '',
-        description: '',
-        caseComplexity: 'Medium',
-        evidenceFiles: [],
-        witnesses: [],
+      toast({
+        title: "Crime report submitted",
+        description: "Your crime report has been successfully registered",
+        status: "success",
+        duration: 5000,
+        isClosable: true,
       });
 
-    } catch (err) {
-      setError(err.message || "An error occurred while submitting the report.");
+      navigate('/dashboard');
+    } catch (error) {
+      console.error("Error submitting report:", error);
+      toast({
+        title: "Submission error",
+        description: error.message || "Failed to submit report. Please try again later.",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
     } finally {
-      setLoading(false);
+      setIsSubmitting(false);
     }
   };
 
+  const todayDate = new Date().toISOString().split('T')[0];
+
   return (
-    <Container maxW="container.md" py={8}>
-      <VStack spacing={6} align="stretch" bg={bgColor} borderRadius="xl" boxShadow="lg" p={6} borderColor={borderColor} borderWidth="1px">
-        <Heading size="lg" textAlign="center">Report a Crime</Heading>
+    <Container maxW="container.lg" py={8}>
+      <Card borderRadius="xl" boxShadow="lg" bg={bgColor} borderColor={borderColor} borderWidth="1px" overflow="hidden">
+        <CardHeader bg={useColorModeValue('blue.50', 'blue.900')} py={4}>
+          <Heading as="h2" size="lg">Report a Crime</Heading>
+        </CardHeader>
 
-        {error && <Box color="red.500" textAlign="center">{error}</Box>}
+        <CardBody py={6}>
+          <form onSubmit={handleSubmit} encType="multipart/form-data">
+            <VStack spacing={6} align="stretch">
 
-        <FormControl isRequired>
-          <FormLabel>Reported By (User ID)</FormLabel>
-          <Input name="reportedBy" value={formData.reportedBy} isReadOnly />
-        </FormControl>
+              {/* Form Details */}
+              <SimpleGrid columns={{ base: 1, md: 2 }} spacing={6}>
+                {/* Incident Info */}
+                <Card variant="outline" p={4} bg={cardBg}>
+                  <CardHeader pb={2}>
+                    <Heading size="md">Incident Information</Heading>
+                  </CardHeader>
+                  <CardBody>
+                    <VStack spacing={4} align="stretch">
+                      <FormControl isRequired isInvalid={!!errors.incidentType}>
+                        <FormLabel>Incident Type</FormLabel>
+                        <Select
+                          name="incidentType"
+                          value={formData.incidentType}
+                          onChange={handleChange}
+                          placeholder="Select incident type"
+                        >
+                          <option value="Robbery">Robbery</option>
+                          <option value="Assault">Assault</option>
+                          <option value="Theft">Theft</option>
+                          <option value="Fraud">Fraud</option>
+                          <option value="Vandalism">Vandalism</option>
+                          <option value="Other">Other</option>
+                        </Select>
+                        <FormErrorMessage>{errors.incidentType}</FormErrorMessage>
+                      </FormControl>
 
-        <FormControl isRequired>
-          <FormLabel>Incident Type</FormLabel>
-          <Input name="incidentType" value={formData.incidentType} onChange={handleChange} placeholder="e.g., Robbery" />
-        </FormControl>
+                      <FormControl isRequired isInvalid={!!errors.date}>
+                        <FormLabel>Date of Incident</FormLabel>
+                        <Input type="date" name="date" value={formData.date} onChange={handleChange} max={todayDate} />
+                        <FormErrorMessage>{errors.date}</FormErrorMessage>
+                      </FormControl>
 
-        <FormControl isRequired>
-          <FormLabel>Date</FormLabel>
-          <Input name="date" type="date" value={formData.date} onChange={handleChange} />
-        </FormControl>
+                      <FormControl isRequired isInvalid={!!errors.time}>
+                        <FormLabel>Time of Incident</FormLabel>
+                        <Input type="time" name="time" value={formData.time} onChange={handleChange} />
+                        <FormErrorMessage>{errors.time}</FormErrorMessage>
+                      </FormControl>
 
-        <FormControl isRequired>
-          <FormLabel>Time</FormLabel>
-          <Input name="time" type="time" value={formData.time} onChange={handleChange} />
-        </FormControl>
+                      <FormControl isRequired isInvalid={!!errors.location}>
+                        <FormLabel>Location</FormLabel>
+                        <Input type="text" name="location" value={formData.location} onChange={handleChange} />
+                        <FormErrorMessage>{errors.location}</FormErrorMessage>
+                      </FormControl>
 
-        <FormControl isRequired>
-          <FormLabel>Location</FormLabel>
-          <Input name="location" value={formData.location} onChange={handleChange} />
-        </FormControl>
+                      <FormControl>
+                        <FormLabel>Reported By</FormLabel>
+                        <Input type="text" value={userName} isReadOnly bg={useColorModeValue('gray.100', 'gray.600')} />
+                      </FormControl>
+                    </VStack>
+                  </CardBody>
+                </Card>
 
-        <FormControl isRequired>
-          <FormLabel>Description</FormLabel>
-          <Textarea name="description" value={formData.description} onChange={handleChange} />
-        </FormControl>
+                {/* Case Details */}
+                <Card variant="outline" p={4} bg={cardBg}>
+                  <CardHeader pb={2}>
+                    <Heading size="md">Case Details</Heading>
+                  </CardHeader>
+                  <CardBody>
+                    <VStack spacing={4} align="stretch">
+                      <FormControl>
+                        <FormLabel>Case Complexity</FormLabel>
+                        <Select name="caseComplexity" value={formData.caseComplexity} onChange={handleChange}>
+                          <option value="Low">Low</option>
+                          <option value="Medium">Medium</option>
+                          <option value="High">High</option>
+                        </Select>
+                      </FormControl>
 
-        <FormControl>
-          <FormLabel>Case Complexity</FormLabel>
-          <Select name="caseComplexity" value={formData.caseComplexity} onChange={handleChange}>
-            <option value="Low">Low</option>
-            <option value="Medium">Medium</option>
-            <option value="High">High</option>
-          </Select>
-        </FormControl>
+                      <FormControl isRequired isInvalid={!!errors.description}>
+                        <FormLabel>Description</FormLabel>
+                        <Textarea
+                          name="description"
+                          value={formData.description}
+                          onChange={handleChange}
+                          rows={5}
+                          placeholder="Describe the incident in detail"
+                        />
+                        <FormErrorMessage>{errors.description}</FormErrorMessage>
+                      </FormControl>
 
-        <FormControl>
-          <FormLabel>Evidence Files</FormLabel>
-          <Input name="evidenceFiles" type="file" multiple onChange={handleFileChange} />
-        </FormControl>
+                      {/* Evidence Files Upload */}
+                      <FormControl>
+                        <FormLabel>Upload Evidence Files</FormLabel>
+                        <Input
+                          type="file"
+                          multiple
+                          accept="image/*,application/pdf,video/*"
+                          onChange={handleFileChange}
+                        />
+                        <VStack mt={2} spacing={2} align="stretch">
+                          {formData.evidenceFiles.map((file, i) => (
+                            <Flex key={i} align="center" bg={useColorModeValue('gray.100', 'gray.600')} p={2} borderRadius="md">
+                              <Text flex="1">{file.name}</Text>
+                              <IconButton icon={<DeleteIcon />} onClick={() => removeEvidenceFile(i)} size="sm" variant="ghost" colorScheme="red" />
+                            </Flex>
+                          ))}
+                        </VStack>
+                        <Button
+                          leftIcon={<AddIcon />}
+                          colorScheme="teal"
+                          variant="solid"
+                          onClick={() => navigate('/add-witness')}
+                          mt={2}
+                        >
+                          Add Witness
+                        </Button>
+                      </FormControl>
 
-        <FormControl>
-          <FormLabel>Witnesses (IDs)</FormLabel>
-          <Input
-            name="witnesses"
-            value={formData.witnesses.join(',')}
-            onChange={(e) =>
-              setFormData({
-                ...formData,
-                witnesses: e.target.value.split(',').map((id) => id.trim()),
-              })
-            }
-            placeholder="Comma-separated ObjectIds"
-          />
-        </FormControl>
+                    </VStack>
+                  </CardBody>
+                </Card>
+              </SimpleGrid>
 
-        <Button colorScheme="blue" isLoading={loading} onClick={handleSubmit}>
-          Submit Report
-        </Button>
-      </VStack>
+              {/* Submit Buttons */}
+              <Flex justify="flex-end" mt={4}>
+                <Button type="button" variant="outline" mr={3} onClick={() => navigate('/dashboard')}>
+                  Cancel
+                </Button>
+                <Button type="submit" colorScheme="blue" isLoading={isSubmitting} loadingText="Submitting">
+                  Submit Report
+                </Button>
+              </Flex>
+
+            </VStack>
+          </form>
+        </CardBody>
+      </Card>
     </Container>
   );
 }
