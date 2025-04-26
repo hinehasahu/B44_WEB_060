@@ -92,7 +92,7 @@ const Navbar = () => {
               All Cases
             </Button>
           </Link>
-
+          
           {user?.isLoggedIn ? (
             <>
               <Text color="white" fontSize="sm">
