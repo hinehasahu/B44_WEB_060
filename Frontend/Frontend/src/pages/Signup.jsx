@@ -40,21 +40,40 @@ export default function Signup() {
       form.contactNo,
       form.isAnonymous
     );
-
-    if (res.success) {
-      setSuccessMsg("Signup successful! Redirecting to login...");
-      setTimeout(() => navigate("/login"), 1500);
-    } else {
-      setError(res.message || "Signup failed");
+  
+    const message = res.message?.toLowerCase() || "";
+  
+    if (message.includes("sucessfully")) {
+      // typo-aware check
       toast({
-        title: "Error",
-        description: res.message || "Signup failed",
+        title: "Signup Successful!",
+        description: "You can now sign in.",
+        status: "success",
+        duration: 3000,
+        isClosable: true,
+      });
+      setTimeout(() => navigate("/login"), 1500);
+    } else if (message.includes("already")) {
+      toast({
+        title: "Already Registered",
+        description: "You can sign in now.",
+        status: "warning",
+        duration: 4000,
+        isClosable: true,
+      });
+      setTimeout(() => navigate("/login"), 2000);
+    } else {
+      toast({
+        title: "Signup Failed",
+        description: res.message || "Something went wrong.",
         status: "error",
-        duration: 5000,
+        duration: 4000,
         isClosable: true,
       });
     }
   };
+  
+  
 
   return (
     <Box display="flex" justifyContent="center" alignItems="center" height="100vh" bg="gray.100">

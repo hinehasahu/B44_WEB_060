@@ -12,12 +12,14 @@ import AllCases from "./pages/allCases";
 import AddWitnessForm from "./pages/addWitness";
 
 
+
 function App() {
   return (
     <>
       <Navbar />
       <Routes>
         <Route path="/" element={<Dashboard />} />
+        
         <Route
           path="/report"
           element={
@@ -50,6 +52,7 @@ function App() {
             </ProtectedRoute>
           }
         />
+        
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
       </Routes>
