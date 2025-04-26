@@ -1,79 +1,51 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import { AuthProvider } from "./context/authContext";
-import Login from "./pages/Login";
-import Dashboard from "./pages/Dashboard";
-import LawyerPanel from "./pages/LawyerPanel";
-import Unauthorized from "./pages/Unauthorized";
-import ProtectedRoute from "./components/ProtectedRoute";
+import React from "react";
+import "../src/App.css"
+import { Route, Routes } from "react-router-dom";
 import Navbar from "./components/Navbar";
-import CaseDetails from "./pages/CaseDetails";
+import Login from "./pages/Login";
+import ProtectedRoute from "./components/ProtectedRoute";
 import ReportCrime from "./pages/ReportCrime";
-import AddWitnessForm from "./pages/addWitness";
+import CaseDetails from "./pages/CaseDetails";
+import Dashboard from "./pages/Dashboard";
+import Signup from "./pages/Signup";
+import AllCases from "./pages/allCases";
+
 
 function App() {
   return (
-    <Routes>
-      <Route path="/" element={<Login />} />
-      <Route
-        path="/dashboard"
-        element={
-          <ProtectedRoute allowedRoles={["user", "lawyer", "admin"]}>
-            <Dashboard />
-          </ProtectedRoute>
-        }
-      />
-
-      <Route
-        path="/lawyer"
-        element={
-          <ProtectedRoute allowedRoles={["lawyer", "admin"]}>
-            <LawyerPanel />
-          </ProtectedRoute>
-        }
-      />
-
-      <Route
-        path="/caseDetails/:id"
-        // element={
-        //   <ProtectedRoute allowedRoles={["lawyer", "admin"]}>
-        //     <CaseDetails />
-        //   </ProtectedRoute>
-        // }
-        element={
-            <CaseDetails />
-        
-        }
-      />
-
-      <Route
-              path="/reportCrime"
-              // element={
-              //   <ProtectedRoute allowedRoles={["lawyer", "admin"]}>
-              //     <CaseDetails />
-              //   </ProtectedRoute>
-              // }
-              element={
-                  <ReportCrime />
-              
-              }
-        />
-
+    <>
+      <Navbar />
+      <Routes>
+        <Route path="/" element={<Dashboard />} />
         <Route
-              path="/addwitness"
-              // element={
-              //   <ProtectedRoute allowedRoles={["lawyer", "admin"]}>
-              //     <CaseDetails />
-              //   </ProtectedRoute>
-              // }
-              element={
-                  <AddWitnessForm />
-              
-              }
+          path="/report"
+          element={
+            <ProtectedRoute>
+              <ReportCrime />
+            </ProtectedRoute>
+          }
         />
-
-      <Route path="/unauthorized" element={<Unauthorized />} />
-      <Route path="*" element={<div>404 Not Found</div>} />
-    </Routes>
+        <Route
+          path="/cases/:id"
+          element={
+            <ProtectedRoute>
+              <CaseDetails />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/allCases"
+          element={
+            <ProtectedRoute>
+              <AllCases />
+            </ProtectedRoute>
+          }
+        />
+        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<Signup />} />
+      </Routes>
+      
+    </>
   );
 }
 

@@ -1,16 +1,19 @@
+import { Spinner } from "@chakra-ui/react";
+import { useAuth } from "../context/authContext";
 import { Navigate } from "react-router-dom";
-import { AuthContext } from "../context/authContext.jsx";
-import { useContext } from "react";
 
-const ProtectedRoute = ({ children, allowedRoles }) => {
-  const { auth } = useContext(AuthContext)
+const ProtectedRoute = ({ children }) => {
+  const { user, isLoading } = useAuth();
 
-  if (!auth.isLoggedIn) return <Navigate to="/" />;
-  if (!allowedRoles.includes(auth.user.role)) return <Navigate to="/unauthorized" />;
+  if (isLoading) {
+    return <Spinner />; // or null
+  }
+
+  if (!user.isLoggedIn) {
+    return <Navigate to="/login" />;
+  }
 
   return children;
 };
 
-export default ProtectedRoute;
-
-
+export default ProtectedRoute
