@@ -12,9 +12,9 @@ export const AuthProvider = ({ children }) => {
     const token = localStorage.getItem("token");
     if (token) {
       const decoded = jwtDecode(token);
-      const userId = decoded.id || decoded._id || decoded.userId || decoded.sub; // get ID safely
+      const userId = decoded.id || decoded._id || decoded.userId || decoded.sub; // get ID 
       setUser({ isLoggedIn: true, role: decoded.role, id: userId });
-      console.log("Decoded token:", decoded); // 👈 Move console.log inside if
+      console.log("Decoded token:", decoded); 
     } else {
       setUser({ isLoggedIn: false, role: "", id: "" });
     }

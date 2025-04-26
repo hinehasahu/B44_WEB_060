@@ -57,8 +57,7 @@ function ReportCrime() {
     verdict: "Pending",
     caseComplexity: "Medium",
     description: "",
-    witnesses: [],
-    evidenceFiles: []
+    evidenceFiles: [],
   });
 
   useEffect(() => {
@@ -86,33 +85,14 @@ function ReportCrime() {
     }
   };
 
-  const [witness, setWitness] = useState("");
-  const addWitness = () => {
-    if (witness.trim()) {
-      setFormData(prev => ({
-        ...prev,
-        witnesses: [...prev.witnesses, witness.trim()]
-      }));
-      setWitness("");
-    }
-  };
-  const removeWitness = (index) => {
+  const handleFileChange = (e) => {
+    const files = Array.from(e.target.files);
     setFormData(prev => ({
       ...prev,
-      witnesses: prev.witnesses.filter((_, i) => i !== index)
+      evidenceFiles: files
     }));
   };
 
-  const [evidenceFile, setEvidenceFile] = useState("");
-  const addEvidenceFile = () => {
-    if (evidenceFile.trim()) {
-      setFormData(prev => ({
-        ...prev,
-        evidenceFiles: [...prev.evidenceFiles, evidenceFile.trim()]
-      }));
-      setEvidenceFile("");
-    }
-  };
   const removeEvidenceFile = (index) => {
     setFormData(prev => ({
       ...prev,
@@ -148,13 +128,27 @@ function ReportCrime() {
 
     try {
       const token = localStorage.getItem("token");
+      const formDataToSend = new FormData();
+      formDataToSend.append("incidentType", formData.incidentType);
+      formDataToSend.append("date", formData.date);
+      formDataToSend.append("time", formData.time);
+      formDataToSend.append("location", formData.location);
+      formDataToSend.append("userID", formData.userID);
+      formDataToSend.append("status", formData.status);
+      formDataToSend.append("verdict", formData.verdict);
+      formDataToSend.append("caseComplexity", formData.caseComplexity);
+      formDataToSend.append("description", formData.description);
+
+      formData.evidenceFiles.forEach((file) => {
+        formDataToSend.append("evidenceFiles", file);
+      });
+
       const response = await fetch("https://b44-web-060-5yqc.onrender.com/crimeReport/registerCrime", {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
           "Authorization": `Bearer ${token}`
         },
-        body: JSON.stringify(formData)
+        body: formDataToSend
       });
 
       if (!response.ok) {
@@ -194,10 +188,12 @@ function ReportCrime() {
         </CardHeader>
 
         <CardBody py={6}>
-          <form onSubmit={handleSubmit}>
+          <form onSubmit={handleSubmit} encType="multipart/form-data">
             <VStack spacing={6} align="stretch">
-              {/* First Half of the Form */}
+
+              {/* Form Details */}
               <SimpleGrid columns={{ base: 1, md: 2 }} spacing={6}>
+                {/* Incident Info */}
                 <Card variant="outline" p={4} bg={cardBg}>
                   <CardHeader pb={2}>
                     <Heading size="md">Incident Information</Heading>
@@ -248,7 +244,7 @@ function ReportCrime() {
                   </CardBody>
                 </Card>
 
-                {/* Second Half of the Form */}
+                {/* Case Details */}
                 <Card variant="outline" p={4} bg={cardBg}>
                   <CardHeader pb={2}>
                     <Heading size="md">Case Details</Heading>
@@ -276,42 +272,40 @@ function ReportCrime() {
                         <FormErrorMessage>{errors.description}</FormErrorMessage>
                       </FormControl>
 
+                      {/* Evidence Files Upload */}
                       <FormControl>
-                        <FormLabel>Witnesses</FormLabel>
-                        <HStack>
-                          <Input value={witness} onChange={(e) => setWitness(e.target.value)} placeholder="Add a witness" />
-                          <IconButton icon={<AddIcon />} onClick={addWitness} colorScheme="blue" />
-                        </HStack>
-                        <VStack mt={2} spacing={2} align="stretch">
-                          {formData.witnesses.map((w, i) => (
-                            <Flex key={i} align="center" bg={useColorModeValue('gray.100', 'gray.600')} p={2} borderRadius="md">
-                              <Text flex="1">{w}</Text>
-                              <IconButton icon={<DeleteIcon />} onClick={() => removeWitness(i)} size="sm" variant="ghost" colorScheme="red" />
-                            </Flex>
-                          ))}
-                        </VStack>
-                      </FormControl>
-
-                      <FormControl>
-                        <FormLabel>Evidence Files</FormLabel>
-                        <HStack>
-                          <Input value={evidenceFile} onChange={(e) => setEvidenceFile(e.target.value)} placeholder="Add evidence file" />
-                          <IconButton icon={<AttachmentIcon />} onClick={addEvidenceFile} colorScheme="purple" />
-                        </HStack>
+                        <FormLabel>Upload Evidence Files</FormLabel>
+                        <Input
+                          type="file"
+                          multiple
+                          accept="image/*,application/pdf,video/*"
+                          onChange={handleFileChange}
+                        />
                         <VStack mt={2} spacing={2} align="stretch">
                           {formData.evidenceFiles.map((file, i) => (
                             <Flex key={i} align="center" bg={useColorModeValue('gray.100', 'gray.600')} p={2} borderRadius="md">
-                              <Text flex="1">{file}</Text>
+                              <Text flex="1">{file.name}</Text>
                               <IconButton icon={<DeleteIcon />} onClick={() => removeEvidenceFile(i)} size="sm" variant="ghost" colorScheme="red" />
                             </Flex>
                           ))}
                         </VStack>
+                        <Button
+                          leftIcon={<AddIcon />}
+                          colorScheme="teal"
+                          variant="solid"
+                          onClick={() => navigate('/add-witness')}
+                          mt={2}
+                        >
+                          Add Witness
+                        </Button>
                       </FormControl>
+
                     </VStack>
                   </CardBody>
                 </Card>
               </SimpleGrid>
 
+              {/* Submit Buttons */}
               <Flex justify="flex-end" mt={4}>
                 <Button type="button" variant="outline" mr={3} onClick={() => navigate('/dashboard')}>
                   Cancel
@@ -320,6 +314,7 @@ function ReportCrime() {
                   Submit Report
                 </Button>
               </Flex>
+
             </VStack>
           </form>
         </CardBody>
