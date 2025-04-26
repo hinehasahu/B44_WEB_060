@@ -14,14 +14,14 @@ export const AuthProvider = ({ children }) => {
       const decoded = jwtDecode(token);
       const userId = decoded.id || decoded._id || decoded.userId || decoded.sub; // get ID safely
       setUser({ isLoggedIn: true, role: decoded.role, id: userId });
+      console.log("Decoded token:", decoded); // 👈 Move console.log inside if
     } else {
       setUser({ isLoggedIn: false, role: "", id: "" });
     }
-    const decoded = jwtDecode(token);
-    console.log("Decoded token:", decoded); // 👈 ADD this
-
+  
     setIsLoading(false);
   }, []);
+  
 
   const login = async (email, password) => {
     const res = await fetch("https://b44-web-060-5yqc.onrender.com/user/signin", {
