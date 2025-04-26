@@ -5,6 +5,7 @@ import Navbar from "./components/Navbar";
 import Login from "./pages/Login";
 import ProtectedRoute from "./components/ProtectedRoute";
 import ReportCrime from "./pages/ReportCrime";
+import ReportCrime from "./pages/ReportCrime";
 import CaseDetails from "./pages/CaseDetails";
 import Dashboard from "./pages/Dashboard";
 import Signup from "./pages/Signup";
