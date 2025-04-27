@@ -20,7 +20,7 @@ crime-reporting-system/
 ├── src/
 │   ├── components/      # Reusable UI components
 │   ├── pages/           # Pages like Login, Dashboard, Report Case
-│   ├── context/        # Axios-based API services
+│   ├── context/        # Auth context
 │   ├── App.jsx
 │   ├── index.jsx
 ├── package.json
@@ -54,9 +54,6 @@ crime-reporting-system/
 ### 📊 Case Tracking Dashboard
 - Track the progress of reported cases in real-time.
 - Option to keep case updates private or share them publicly.
-
-### 🚨 Real-Time Crime Alerts
-- Receive notifications for reported crimes in nearby locations.
 
 ### 🏩 Judicial Decision Repository
 - View final case verdicts and judicial commentary.
@@ -120,12 +117,6 @@ npm run build
 
 ### Submitting Witness Statements
 - Add witness details or submit supporting information securely.
-
-### Viewing Crime Alerts
-- Stay informed about crimes occurring near your area of interest.
-
-### Accessing Judicial Decisions
-- Browse completed cases and verdicts under the "Decisions" tab.
 
 ---
 
