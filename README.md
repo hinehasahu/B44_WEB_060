@@ -31,7 +31,7 @@ crime-reporting-system/
 
 ## Video Walkthrough
 - **Project Overview:** *[Link to be added]*
-- **Codebase Tour:** *[Link to be added]*
+- **Codebase Tour:** *https://youtu.be/_RIdnMLhz54*
 
 ---
 
