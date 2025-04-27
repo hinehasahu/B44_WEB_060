@@ -21,7 +21,7 @@ const AddWitnessForm = () => {
     isAnonymous: false,
   });
 
-  const toast = useToast(); 
+  const toast = useToast();
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -37,13 +37,16 @@ const AddWitnessForm = () => {
     try {
       const crimeId = formData.crimeId; // Get the Crime ID
 
-      const response = await fetch(`https://b44-web-060-5yqc.onrender.com/witness/addWitness/${crimeId}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formData),
-      });
+      const response = await fetch(
+        `https://b44-web-060-5yqc.onrender.com/witness/addWitness/${crimeId}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(formData),
+        }
+      );
 
       const data = await response.json();
 

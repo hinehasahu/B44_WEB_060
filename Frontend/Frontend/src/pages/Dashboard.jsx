@@ -1,5 +1,13 @@
 import React from "react";
-import { Box, Button, Heading, Text, Flex, Grid, Stack } from "@chakra-ui/react";
+import {
+  Box,
+  Button,
+  Heading,
+  Text,
+  Flex,
+  Grid,
+  Stack,
+} from "@chakra-ui/react";
 import { Link } from "react-router-dom";
 
 const HomePage = () => {
@@ -21,9 +29,14 @@ const HomePage = () => {
           Crime Management System
         </Heading>
         <Text fontSize="xl" mb={6}>
-          Efficiently manage crime reports, track investigations, and ensure public safety.
+          Efficiently manage crime reports, track investigations, and ensure
+          public safety.
         </Text>
-        <Stack direction={{ base: "column", md: "row" }} spacing={4} justify="center">
+        <Stack
+          direction={{ base: "column", md: "row" }}
+          spacing={4}
+          justify="center"
+        >
           <Link to="/report">
             <Button colorScheme="teal" size="lg">
               Report a Crime
@@ -83,7 +96,9 @@ const OverviewCard = ({ title, description, link }) => (
     transition="transform 0.3s ease-in-out"
   >
     <Flex direction="column" align="center" justify="center" textAlign="center">
-      <Heading as="h4" size="md" mb={2}>{title}</Heading>
+      <Heading as="h4" size="md" mb={2}>
+        {title}
+      </Heading>
       <Text mb={4}>{description}</Text>
       <Link to={link}>
         <Button colorScheme="blue" variant="outline">
@@ -106,3 +121,5 @@ const StatCard = ({ title, value }) => (
 );
 
 export default HomePage;
+
+//
